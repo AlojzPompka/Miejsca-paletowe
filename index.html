@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator miejsca</title>
+  <style>
+    body { font-family: Arial; background: #f8f9fa; text-align: center; padding: 20px; }
+    input { width: 80px; padding: 6px; margin: 5px; font-size: 1rem; text-align: center; }
+    button { padding: 10px 20px; margin-top: 10px; background: #007aff; color: white; border: none; border-radius: 5px; }
+    button:hover { background: #005ecb; }
+    .wynik { margin-top: 20px; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <h1>🚛 Kalkulator miejsca</h1>
+  <p>Oblicz zajętą długość naczepy</p>
+
+  <div>
+    <label>🪵 Wybite:</label>
+    <input type="number" id="wybite" placeholder="np. 5" />
+  </div>
+  <div>
+    <label>📦 Euro:</label>
+    <input type="number" id="euro" placeholder="np. 8" />
+  </div>
+  <button onclick="oblicz()">OBLICZ</button>
+
+  <div class="wynik" id="wynik"></div>
+
+  <script>
+    function oblicz() {
+      let wybite = parseInt(document.getElementById('wybite').value) || 0;
+      let euro = parseInt(document.getElementById('euro').value) || 0;
+      let dlugosc = 0.0;
+      let opis = "";
+      const dlNaczepy = 13.6;
+
+      let pelneRzedy = Math.floor(wybite / 2);
+      let nieparzysta = wybite % 2;
+      dlugosc += pelneRzedy * 1.0;
+
+      if (nieparzysta === 1) {
+        if (euro > 0) {
+          euro -= 1;
+          opis = "Ostatni rząd: 1 wybita + 1 euro po szerokości";
+        } else {
+          opis = "Ostatni rząd: 1 wybita (połowa szerokości)";
+        }
+        dlugosc += 1.0;
+      }
+
+      let rzedy3 = Math.floor(euro / 3);
+      let reszta = euro % 3;
+      dlugosc += rzedy3 * 1.2;
+
+      if (reszta === 2) {
+        dlugosc += 0.8;
+        opis = "Ostatni rząd: 2 euro po szerokości";
+      } else if (reszta === 1) {
+        dlugosc += 0.8;
+        opis = "Ostatni rząd: 1 euro po szerokości";
+      }
+
+      let wolne = Math.max(dlNaczepy - dlugosc, 0).toFixed(1);
+
+      document.getElementById('wynik').innerHTML = `
+        📏 Zajęta długość: ${dlugosc.toFixed(1)} m<br>
+        🟩 Wolna długość: ${wolne} m<br><br>
+        💡 ${opis}
+      `;
+    }
+  </script>
+</body>
+</html>
