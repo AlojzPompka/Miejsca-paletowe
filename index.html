@@ -6,210 +6,174 @@
 <title>Kalkulator miejsca</title>
 <style>
   body {
-    background-color: #0d0d0d;
-    color: #fff;
-    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: #e0e0e0;
+    font-family: "Segoe UI", sans-serif;
     text-align: center;
     margin: 0;
-    padding: 10px;
-    overflow: hidden;
+    padding: 20px;
   }
-
-  h1 { color: #4CAF50; margin-bottom: 8px; }
-
-  .input-section {
-    margin-bottom: 10px;
+  h1 {
+    color: #4CAF50;
   }
-
   input {
     width: 60px;
-    padding: 4px;
-    margin: 3px;
-    font-size: 1rem;
     text-align: center;
-    border: 1px solid #555;
-    border-radius: 5px;
-    background-color: #222;
-    color: #fff;
+    margin: 5px;
+    font-size: 16px;
+    padding: 4px;
+    border-radius: 4px;
+    border: none;
   }
-
   button {
     background-color: #4CAF50;
-    border: none;
     color: white;
-    padding: 6px 14px;
-    margin-top: 5px;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 1rem;
-    border-radius: 5px;
   }
-
-  button:hover { background-color: #45a049; }
-
-  .instruction {
-    background-color: #1a1a1a;
+  .box {
+    background-color: #1c1c1c;
+    padding: 15px;
     border-radius: 10px;
-    padding: 10px;
-    width: 90%;
-    max-width: 380px;
     margin: 10px auto;
-    text-align: left;
-    font-size: 0.95rem;
+    width: 320px;
   }
-
-  .trailer {
+  .info {
+    color: #8be3ff;
+    font-size: 15px;
+    margin-top: 8px;
+  }
+  .truck {
+    background-color: #222;
+    width: 180px;
+    margin: 15px auto;
+    padding: 8px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #1a1a1a;
-    border-radius: 10px;
-    padding: 8px;
-    width: 130px;
-    margin: 10px auto;
   }
-
   .row {
     display: flex;
-    width: 100%;
-    margin: 1px 0;
+    justify-content: center;
+    margin: 2px 0;
   }
-
-  .W, .E, .M {
-    border: 1px solid #000;
-    border-radius: 3px;
+  .w {
+    background-color: #2196F3;
+    width: 75px;
+    height: 22px;
     margin: 1px;
-    height: 14px;
+    border-radius: 3px;
   }
-
-  .W { background-color: #007bff; width: 48%; }
-  .M { background-color: #ffc107; width: 48%; }
-  .E.short { background-color: #4CAF50; width: 48%; }
-  .E.long { background-color: #4CAF50; width: 31%; }
-
+  .mix {
+    background: linear-gradient(90deg, #2196F3 50%, #c6c31a 50%);
+    width: 150px;
+    height: 22px;
+    margin: 1px;
+    border-radius: 3px;
+  }
+  .e2 {
+    background-color: #4CAF50;
+    width: 75px;
+    height: 15px;
+    margin: 1px;
+    border-radius: 3px;
+  }
+  .e3 {
+    background-color: #4CAF50;
+    width: 48px;
+    height: 20px;
+    margin: 1px;
+    border-radius: 3px;
+  }
   .extra {
-    background-color: #111;
-    border-radius: 10px;
-    padding: 8px;
-    width: 90%;
-    max-width: 380px;
-    margin: 5px auto;
-    text-align: left;
-    font-size: 0.9rem;
-    color: #9cff9c;
+    background-color: #162916;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px auto;
+    width: 320px;
+    color: #8fff8f;
   }
-
 </style>
 </head>
 <body>
 
 <h1>🚛 Kalkulator miejsca</h1>
 
-<div class="input-section">
-  <label>🪵 Wybite: <input type="number" id="wbite" min="0"></label>
-  <label>📦 Euro: <input type="number" id="euro" min="0"></label><br>
-  <button onclick="oblicz()">OBLICZ</button>
-</div>
+<label>🪵 Wybite: </label>
+<input type="number" id="wybite" min="0" placeholder="">
+<label>📦 Euro: </label>
+<input type="number" id="euro" min="0" placeholder="">
+<br>
+<button onclick="oblicz()">OBLICZ</button>
 
-<div class="instruction" id="instrukcja"></div>
-<div class="trailer" id="trailer"></div>
+<div class="box" id="instrukcja"></div>
+<div class="truck" id="grafika"></div>
 <div class="extra" id="extra"></div>
 
 <script>
 function oblicz() {
-  const wybite = parseInt(document.getElementById("wbite").value) || 0;
-  let euro = parseInt(document.getElementById("euro").value) || 0;
-  const trailer = document.getElementById("trailer");
-  const instrukcja = document.getElementById("instrukcja");
-  const extra = document.getElementById("extra");
+  const wybite = parseInt(document.getElementById('wybite').value) || 0;
+  const euro = parseInt(document.getElementById('euro').value) || 0;
+  const instrukcja = document.getElementById('instrukcja');
+  const grafika = document.getElementById('grafika');
+  const extra = document.getElementById('extra');
 
-  trailer.innerHTML = "";
+  grafika.innerHTML = "";
   instrukcja.innerHTML = "";
   extra.innerHTML = "";
 
-  let zajeta = 0;
-  const rzedy = [];
+  let rzedWybite = Math.floor(wybite / 2);
+  let mieszany = wybite % 2 === 1 ? 1 : 0;
+  let euroPozostale = euro;
+  let rzad2 = 0, rzad3 = 0;
 
-  // --- Wybite ---
-  let paryW = Math.floor(wybite / 2);
-  let nieparzysta = wybite % 2;
+  if (mieszany) euroPozostale -= 1;
 
-  for (let i = 0; i < paryW; i++) {
-    rzedy.push("W");
-    zajeta += 1.0;
+  while (euroPozostale >= 3) {
+    euroPozostale -= 3;
+    rzad3++;
+  }
+  if (euroPozostale === 2) rzad2++;
+  else if (euroPozostale === 1 && rzad3 > 0) {
+    rzad3--;
+    rzad2 += 2; // 3 euro → 2+2=4 z pełnym końcem
   }
 
-  // --- Jeśli nieparzysta wybita ---
-  if (nieparzysta && euro > 0) {
-    rzedy.push("M");
-    zajeta += 1.0;
-    euro -= 1;
-  } else if (nieparzysta) {
-    rzedy.push("W");
-    zajeta += 1.0;
-  }
+  // obliczenia długości
+  let dlugosc = rzedWybite * 1.0 + mieszany * 1.0 + rzad2 * 0.8 + rzad3 * 1.2;
+  let wolne = (13.6 - dlugosc).toFixed(1);
+  let zaladunek = Math.min((dlugosc / 13.6) * 100, 100).toFixed(0);
 
-  // --- EURO: dopasowanie bez pozostawiania pojedynczej ---
-  let trojki = Math.floor(euro / 3);
-  let reszta = euro % 3;
-
-  if (reszta === 1 && trojki > 0) {
-    trojki -= 1;
-    reszta += 3; // 1+3=4 → 2x dwójki
-  }
-
-  let dwojki = 0;
-  if (reszta === 2) dwojki = 1;
-  else if (reszta === 4) dwojki = 2;
-
-  euro = 0;
-
-  for (let i = 0; i < dwojki; i++) {
-    rzedy.push("E2");
-    zajeta += 0.8;
-  }
-
-  for (let i = 0; i < trojki; i++) {
-    rzedy.push("E3");
-    zajeta += 1.2;
-  }
-
-  // --- Rysowanie naczepy ---
-  rzedy.forEach(typ => {
-    const row = document.createElement("div");
-    row.className = "row";
-    if (typ === "W") row.innerHTML = `<div class="W"></div><div class="W"></div>`;
-    else if (typ === "M") row.innerHTML = `<div class="W"></div><div class="M"></div>`;
-    else if (typ === "E2") row.innerHTML = `<div class="E short"></div><div class="E short"></div>`;
-    else if (typ === "E3") row.innerHTML = `<div class="E long"></div><div class="E long"></div><div class="E long"></div>`;
-    trailer.appendChild(row);
-  });
-
-  // --- Grupowanie dla krótkiej instrukcji ---
-  const grupy = {};
-  rzedy.forEach(r => { grupy[r] = (grupy[r] || 0) + 1; });
-
-  let tekst = `<b>🪵 Instrukcja ładowania:</b><br>`;
-  if (grupy.W) tekst += `${grupy.W} rzędy wybite – ${(grupy.W * 1.0).toFixed(1)} m<br>`;
-  if (grupy.M) tekst += `${grupy.M} rząd mieszany – ${(grupy.M * 1.0).toFixed(1)} m<br>`;
-  if (grupy.E2) tekst += `${grupy.E2} rzędy dwójek – ${(grupy.E2 * 0.8).toFixed(1)} m<br>`;
-  if (grupy.E3) tekst += `${grupy.E3} rzędów trójek – ${(grupy.E3 * 1.2).toFixed(1)} m<br>`;
-
-  const wolne = 13.6 - zajeta;
-  const procent = Math.round((zajeta / 13.6) * 100);
-  tekst += `<hr>🔹 Łączna długość: ${zajeta.toFixed(1)} m / 13.6 m<br>`;
-  tekst += `🔹 Wolne: ${wolne.toFixed(1)} m<br>`;
-  tekst += `🔹 Załadunek: ${procent}%`;
-
+  // instrukcja
+  let tekst = "<b>🪵 Instrukcja ładowania:</b><br>";
+  if (rzedWybite > 0) tekst += `${rzedWybite} rzędy wybite – ${rzedWybite} m<br>`;
+  if (mieszany) tekst += `1 rząd mieszany – 1.0 m<br>`;
+  if (rzad2 > 0) tekst += `${rzad2} rząd dwójek – ${(rzad2 * 0.8).toFixed(1)} m<br>`;
+  if (rzad3 > 0) tekst += `${rzad3} rzędów trójek – ${(rzad3 * 1.2).toFixed(1)} m<br>`;
+  tekst += `<hr><div class='info'>🔹 Łączna długość: ${dlugosc.toFixed(1)} m / 13.6 m<br>🔹 Wolne: ${wolne} m<br>🔹 Załadunek: ${zaladunek}%</div>`;
   instrukcja.innerHTML = tekst;
 
-  // --- Propozycja doładowania ---
+  // grafika
+  if (rzedWybite > 0) for (let i = 0; i < rzedWybite; i++) grafika.innerHTML += `<div class='row'><div class='w'></div><div class='w'></div></div>`;
+  if (mieszany) grafika.innerHTML += `<div class='row'><div class='mix'></div></div>`;
+  if (rzad2 > 0) for (let i = 0; i < rzad2; i++) grafika.innerHTML += `<div class='row'><div class='e2'></div><div class='e2'></div></div>`;
+  if (rzad3 > 0) for (let i = 0; i < rzad3; i++) grafika.innerHTML += `<div class='row'><div class='e3'></div><div class='e3'></div><div class='e3'></div></div>`;
+
+  // propozycja doładowania
   let extraText = "";
   if (wolne >= 1.2) {
-    extraText = `Można jeszcze dodać <b>1 rząd trójek (3 euro)</b> – zajmie 1,2 m.`;
+    const zostanie = (wolne - 1.2).toFixed(1);
+    extraText = `Można jeszcze dodać <b>1 rząd trójek (3 euro)</b> – zostanie wtedy ${zostanie} m miejsca wolnego.`;
   } else if (wolne >= 1.0) {
-    extraText = `Można jeszcze dodać <b>1 rząd wybitych (2 wybite)</b> – zajmie 1,0 m.`;
+    const zostanie = (wolne - 1.0).toFixed(1);
+    extraText = `Można jeszcze dodać <b>1 rząd wybitych (2 wybite)</b> – zostanie wtedy ${zostanie} m miejsca wolnego.`;
   } else if (wolne >= 0.8) {
-    extraText = `Można jeszcze dodać <b>1 rząd dwójek (2 euro)</b> – zajmie 0,8 m.`;
+    const zostanie = (wolne - 0.8).toFixed(1);
+    extraText = `Można jeszcze dodać <b>1 rząd dwójek (2 euro)</b> – zostanie wtedy ${zostanie} m miejsca wolnego.`;
   } else {
     extraText = `Brak miejsca na kolejne palety.`;
   }
