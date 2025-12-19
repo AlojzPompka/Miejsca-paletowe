@@ -1,73 +1,226 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator miejsca</title>
   <style>
-    body { font-family: Arial; background: #f8f9fa; text-align: center; padding: 20px; }
-    input { width: 80px; padding: 6px; margin: 5px; font-size: 1rem; text-align: center; }
-    button { padding: 10px 20px; margin-top: 10px; background: #007aff; color: white; border: none; border-radius: 5px; }
-    button:hover { background: #005ecb; }
-    .wynik { margin-top: 20px; font-size: 1.2rem; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fb;
+      color: #222;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #007aff;
+    }
+
+    input {
+      width: 80px;
+      padding: 6px;
+      margin: 5px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #005ecb;
+    }
+
+    .wynik {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      line-height: 1.5em;
+    }
+
+    .naczepa {
+      width: 90%;
+      max-width: 600px;
+      height: 120px;
+      margin: 20px auto;
+      background-color: #e0e0e0;
+      border: 2px solid #666;
+      border-radius: 10px;
+      display: flex;
+      flex-wrap: nowrap;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .paleta {
+      height: 100%;
+      border-right: 1px solid white;
+    }
+
+    .paleta.euro {
+      background-color: #4caf50;
+    }
+
+    .paleta.wybita {
+      background-color: #f0ad4e;
+    }
+
+    /* Pasek załadunku */
+    .progress-container {
+      width: 90%;
+      max-width: 600px;
+      height: 20px;
+      background-color: #ddd;
+      border-radius: 10px;
+      margin: 10px auto 0 auto;
+      overflow: hidden;
+      border: 1px solid #aaa;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.5s, background-color 0.5s;
+    }
+
+    .instrukcja {
+      margin-top: 15px;
+      font-size: 0.95rem;
+      color: #555;
+      text-align: left;
+      max-width: 600px;
+      margin-inline: auto;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
   <h1>🚛 Kalkulator miejsca</h1>
-  <p>Oblicz zajętą długość naczepy</p>
+  <p>Oblicz zajętą długość i zobacz jak wygląda naczepa</p>
 
   <div>
     <label>🪵 Wybite:</label>
-    <input type="number" id="wybite" placeholder="np. 5" />
+    <input type="number" id="wybite" placeholder="np. 5">
   </div>
   <div>
     <label>📦 Euro:</label>
-    <input type="number" id="euro" placeholder="np. 8" />
+    <input type="number" id="euro" placeholder="np. 8">
   </div>
   <button onclick="oblicz()">OBLICZ</button>
 
-  <div class="wynik" id="wynik"></div>
+  <div id="naczepa" class="naczepa"></div>
+
+  <!-- Pasek załadunku -->
+  <div class="progress-container">
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
+
+  <div id="wynik" class="wynik"></div>
+
+  <div class="instrukcja">
+    <strong>📝 Instrukcja ładowania:</strong>
+    <ul style="text-align:left;">
+      <li>2 wybite = 1 rząd (1,0 m długości)</li>
+      <li>1 wybita + 1 euro po szerokości = 1 rząd (1,0 m)</li>
+      <li>3 euro po długości = 1 rząd (1,2 m)</li>
+      <li>Jeśli nie można utworzyć pełnych trójek euro, twórz rząd z 2 (0,8 m) lub 1 (0,8 m)</li>
+      <li>Całkowita długość naczepy: 13,6 m</li>
+    </ul>
+  </div>
 
   <script>
     function oblicz() {
-      let wybite = parseInt(document.getElementById('wybite').value) || 0;
-      let euro = parseInt(document.getElementById('euro').value) || 0;
-      let dlugosc = 0.0;
-      let opis = "";
-      const dlNaczepy = 13.6;
+      let wybite = parseInt(document.getElementById("wybite").value) || 0;
+      let euro = parseInt(document.getElementById("euro").value) || 0;
+      let naczepa = document.getElementById("naczepa");
+      naczepa.innerHTML = "";
 
+      const maxDlugosc = 13.6;
+      let zajete = 0;
+      let opis = "";
+
+      // Wybite palety
       let pelneRzedy = Math.floor(wybite / 2);
       let nieparzysta = wybite % 2;
-      dlugosc += pelneRzedy * 1.0;
+      zajete += pelneRzedy * 1.0;
 
+      // Nieparzysta wybita
       if (nieparzysta === 1) {
         if (euro > 0) {
           euro -= 1;
-          opis = "Ostatni rząd: 1 wybita + 1 euro po szerokości";
+          opis += "Ostatni rząd: 1 wybita + 1 euro po szerokości.<br>";
         } else {
-          opis = "Ostatni rząd: 1 wybita (połowa szerokości)";
+          opis += "Ostatni rząd: 1 wybita (połowa szerokości).<br>";
         }
-        dlugosc += 1.0;
+        zajete += 1.0;
       }
 
+      // Euro palety
       let rzedy3 = Math.floor(euro / 3);
       let reszta = euro % 3;
-      dlugosc += rzedy3 * 1.2;
-
+      zajete += rzedy3 * 1.2;
       if (reszta === 2) {
-        dlugosc += 0.8;
-        opis = "Ostatni rząd: 2 euro po szerokości";
+        zajete += 0.8;
+        opis += "Ostatni rząd: 2 euro po szerokości.<br>";
       } else if (reszta === 1) {
-        dlugosc += 0.8;
-        opis = "Ostatni rząd: 1 euro po szerokości";
+        zajete += 0.8;
+        opis += "Ostatni rząd: 1 euro po szerokości (niepełny).<br>";
       }
 
-      let wolne = Math.max(dlNaczepy - dlugosc, 0).toFixed(1);
+      let wolne = (maxDlugosc - zajete).toFixed(1);
+      if (wolne < 0) wolne = 0;
 
-      document.getElementById('wynik').innerHTML = `
-        📏 Zajęta długość: ${dlugosc.toFixed(1)} m<br>
+      // Wizualizacja palet
+      let iloscProstokatow = Math.round((zajete / maxDlugosc) * 20);
+      for (let i = 0; i < iloscProstokatow; i++) {
+        let paletaDiv = document.createElement("div");
+        paletaDiv.classList.add("paleta");
+        if (i < pelneRzedy) paletaDiv.classList.add("wybita");
+        else paletaDiv.classList.add("euro");
+        paletaDiv.style.width = (100 / 20) + "%";
+        naczepa.appendChild(paletaDiv);
+      }
+
+      // Pasek załadunku
+      let progress = (zajete / maxDlugosc) * 100;
+      let bar = document.getElementById("progress-bar");
+      bar.style.width = progress + "%";
+
+      // Kolor zależny od poziomu załadunku
+      if (progress < 60) bar.style.backgroundColor = "#4caf50"; // zielony
+      else if (progress < 85) bar.style.backgroundColor = "#ffb300"; // żółty
+      else bar.style.backgroundColor = "#f44336"; // czerwony
+
+      // Wynik i podpowiedź
+      let moznaDolozyc = "";
+
+      if (wolne >= 1.2) {
+        moznaDolozyc = `Można dodać np. jeszcze ${(wolne / 1.2).toFixed(0)} rzędy euro (po 3 sztuki).`;
+      } else if (wolne >= 1.0) {
+        moznaDolozyc = `Można dodać np. 2 wybite lub 1 wybita + 1 euro po szerokości.`;
+      } else if (wolne >= 0.8) {
+        moznaDolozyc = `Zmieszczą się maksymalnie 2 euro po szerokości.`;
+      } else {
+        moznaDolozyc = `Brak miejsca na kolejne palety.`;
+      }
+
+      document.getElementById("wynik").innerHTML = `
+        📏 Zajęta długość: ${zajete.toFixed(1)} m<br>
         🟩 Wolna długość: ${wolne} m<br><br>
-        💡 ${opis}
+        💡 ${opis}<br>
+        ➕ ${moznaDolozyc}<br>
+        <br><strong>📊 Załadunek: ${progress.toFixed(0)}%</strong>
       `;
     }
   </script>
