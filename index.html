@@ -48,20 +48,33 @@
     .naczepa {
       width: 90%;
       max-width: 600px;
-      height: 120px;
+      aspect-ratio: 13.6 / 2.45; /* proporcja naczepy */
       margin: 20px auto;
       background-color: #e0e0e0;
       border: 2px solid #666;
       border-radius: 10px;
       display: flex;
-      flex-wrap: nowrap;
+      flex-direction: column;
       overflow: hidden;
       position: relative;
     }
 
+    .rzad {
+      display: flex;
+      flex-direction: row;
+      height: 50%;
+      border-bottom: 1px solid #ccc;
+    }
+
     .paleta {
-      height: 100%;
+      flex: 1;
       border-right: 1px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: white;
     }
 
     .paleta.euro {
@@ -72,7 +85,6 @@
       background-color: #f0ad4e;
     }
 
-    /* Pasek załadunku */
     .progress-container {
       width: 90%;
       max-width: 600px;
@@ -107,7 +119,7 @@
 </head>
 <body>
   <h1>🚛 Kalkulator miejsca</h1>
-  <p>Oblicz zajętą długość i zobacz jak wygląda naczepa</p>
+  <p>Oblicz zajętą długość i zobacz układ palet na naczepie</p>
 
   <div>
     <label>🪵 Wybite:</label>
@@ -119,9 +131,11 @@
   </div>
   <button onclick="oblicz()">OBLICZ</button>
 
-  <div id="naczepa" class="naczepa"></div>
+  <div id="naczepa" class="naczepa">
+    <div id="rzad1" class="rzad"></div>
+    <div id="rzad2" class="rzad"></div>
+  </div>
 
-  <!-- Pasek załadunku -->
   <div class="progress-container">
     <div id="progress-bar" class="progress-bar"></div>
   </div>
@@ -130,7 +144,7 @@
 
   <div class="instrukcja">
     <strong>📝 Instrukcja ładowania:</strong>
-    <ul style="text-align:left;">
+    <ul>
       <li>2 wybite = 1 rząd (1,0 m długości)</li>
       <li>1 wybita + 1 euro po szerokości = 1 rząd (1,0 m)</li>
       <li>3 euro po długości = 1 rząd (1,2 m)</li>
@@ -143,33 +157,38 @@
     function oblicz() {
       let wybite = parseInt(document.getElementById("wybite").value) || 0;
       let euro = parseInt(document.getElementById("euro").value) || 0;
-      let naczepa = document.getElementById("naczepa");
-      naczepa.innerHTML = "";
-
       const maxDlugosc = 13.6;
+
       let zajete = 0;
       let opis = "";
+      let naczepa = document.getElementById("naczepa");
+      let rzad1 = document.getElementById("rzad1");
+      let rzad2 = document.getElementById("rzad2");
+      rzad1.innerHTML = "";
+      rzad2.innerHTML = "";
 
-      // Wybite palety
+      // Ustalanie rzędów
       let pelneRzedy = Math.floor(wybite / 2);
       let nieparzysta = wybite % 2;
+
       zajete += pelneRzedy * 1.0;
 
-      // Nieparzysta wybita
       if (nieparzysta === 1) {
         if (euro > 0) {
           euro -= 1;
+          zajete += 1.0;
           opis += "Ostatni rząd: 1 wybita + 1 euro po szerokości.<br>";
         } else {
+          zajete += 1.0;
           opis += "Ostatni rząd: 1 wybita (połowa szerokości).<br>";
         }
-        zajete += 1.0;
       }
 
       // Euro palety
       let rzedy3 = Math.floor(euro / 3);
       let reszta = euro % 3;
       zajete += rzedy3 * 1.2;
+
       if (reszta === 2) {
         zajete += 0.8;
         opis += "Ostatni rząd: 2 euro po szerokości.<br>";
@@ -181,46 +200,50 @@
       let wolne = (maxDlugosc - zajete).toFixed(1);
       if (wolne < 0) wolne = 0;
 
-      // Wizualizacja palet
-      let iloscProstokatow = Math.round((zajete / maxDlugosc) * 20);
-      for (let i = 0; i < iloscProstokatow; i++) {
-        let paletaDiv = document.createElement("div");
-        paletaDiv.classList.add("paleta");
-        if (i < pelneRzedy) paletaDiv.classList.add("wybita");
-        else paletaDiv.classList.add("euro");
-        paletaDiv.style.width = (100 / 20) + "%";
-        naczepa.appendChild(paletaDiv);
+      // Rysowanie grafiki
+      let wszystkiePalety = [];
+      for (let i = 0; i < wybite; i++) wszystkiePalety.push("W");
+      for (let i = 0; i < euro; i++) wszystkiePalety.push("E");
+
+      let rzadGorny = [];
+      let rzadDolny = [];
+      for (let i = 0; i < wszystkiePalety.length; i++) {
+        if (i % 2 === 0) rzadGorny.push(wszystkiePalety[i]);
+        else rzadDolny.push(wszystkiePalety[i]);
+      }
+
+      const maxProstokatow = Math.max(rzadGorny.length, rzadDolny.length);
+
+      for (let i = 0; i < maxProstokatow; i++) {
+        let p1 = document.createElement("div");
+        if (rzadGorny[i] === "W") p1.classList.add("paleta", "wybita");
+        else if (rzadGorny[i] === "E") p1.classList.add("paleta", "euro");
+        else p1.classList.add("paleta");
+        p1.textContent = rzadGorny[i] || "";
+        rzad1.appendChild(p1);
+
+        let p2 = document.createElement("div");
+        if (rzadDolny[i] === "W") p2.classList.add("paleta", "wybita");
+        else if (rzadDolny[i] === "E") p2.classList.add("paleta", "euro");
+        else p2.classList.add("paleta");
+        p2.textContent = rzadDolny[i] || "";
+        rzad2.appendChild(p2);
       }
 
       // Pasek załadunku
       let progress = (zajete / maxDlugosc) * 100;
       let bar = document.getElementById("progress-bar");
       bar.style.width = progress + "%";
+      if (progress < 60) bar.style.backgroundColor = "#4caf50";
+      else if (progress < 85) bar.style.backgroundColor = "#ffb300";
+      else bar.style.backgroundColor = "#f44336";
 
-      // Kolor zależny od poziomu załadunku
-      if (progress < 60) bar.style.backgroundColor = "#4caf50"; // zielony
-      else if (progress < 85) bar.style.backgroundColor = "#ffb300"; // żółty
-      else bar.style.backgroundColor = "#f44336"; // czerwony
-
-      // Wynik i podpowiedź
-      let moznaDolozyc = "";
-
-      if (wolne >= 1.2) {
-        moznaDolozyc = `Można dodać np. jeszcze ${(wolne / 1.2).toFixed(0)} rzędy euro (po 3 sztuki).`;
-      } else if (wolne >= 1.0) {
-        moznaDolozyc = `Można dodać np. 2 wybite lub 1 wybita + 1 euro po szerokości.`;
-      } else if (wolne >= 0.8) {
-        moznaDolozyc = `Zmieszczą się maksymalnie 2 euro po szerokości.`;
-      } else {
-        moznaDolozyc = `Brak miejsca na kolejne palety.`;
-      }
-
+      // Wynik
       document.getElementById("wynik").innerHTML = `
         📏 Zajęta długość: ${zajete.toFixed(1)} m<br>
         🟩 Wolna długość: ${wolne} m<br><br>
         💡 ${opis}<br>
-        ➕ ${moznaDolozyc}<br>
-        <br><strong>📊 Załadunek: ${progress.toFixed(0)}%</strong>
+        📊 Załadunek: ${progress.toFixed(0)}%
       `;
     }
   </script>
