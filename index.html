@@ -13,13 +13,9 @@
     padding: 10px;
   }
 
-  h1 {
-    color: #4CAF50;
-  }
+  h1 { color: #4CAF50; }
 
-  .input-section {
-    margin-bottom: 15px;
-  }
+  .input-section { margin-bottom: 15px; }
 
   input {
     width: 60px;
@@ -38,9 +34,7 @@
     font-size: 1rem;
   }
 
-  button:hover {
-    background-color: #45a049;
-  }
+  button:hover { background-color: #45a049; }
 
   .instruction {
     background-color: #222;
@@ -76,25 +70,10 @@
     height: 20px;
   }
 
-  .W {
-    background-color: #007bff;
-    width: 48%;
-  }
-
-  .M {
-    background-color: #ffc107;
-    width: 48%;
-  }
-
-  .E.short {
-    background-color: #4CAF50;
-    width: 48%;
-  }
-
-  .E.long {
-    background-color: #4CAF50;
-    width: 31%;
-  }
+  .W { background-color: #007bff; width: 48%; }
+  .M { background-color: #ffc107; width: 48%; }
+  .E.short { background-color: #4CAF50; width: 48%; }
+  .E.long { background-color: #4CAF50; width: 31%; }
 
 </style>
 </head>
@@ -103,8 +82,8 @@
 <h1>🚛 Kalkulator miejsca</h1>
 
 <div class="input-section">
-  <label>🪵 Wybite: <input type="number" id="wbite" value="4" min="0"></label>
-  <label>📦 Euro: <input type="number" id="euro" value="26" min="0"></label><br>
+  <label>🪵 Wybite: <input type="number" id="wbite" min="0" placeholder=""></label>
+  <label>📦 Euro: <input type="number" id="euro" min="0" placeholder=""></label><br>
   <button onclick="oblicz()">OBLICZ</button>
 </div>
 
@@ -128,59 +107,58 @@ function oblicz() {
   let nieparzysta = wybite % 2;
 
   for (let i = 0; i < paryW; i++) {
-    rzedy.push({ typ: "W", dl: 1.0, opis: "rząd wybitych", szer: "pełna" });
+    rzedy.push("W");
     zajeta += 1.0;
   }
 
   // --- Jeśli nieparzysta wybita ---
   if (nieparzysta && euro > 0) {
-    rzedy.push({ typ: "M", dl: 1.0, opis: "rząd mieszany (1 wybita + 1 euro)", szer: "pełna" });
+    rzedy.push("M");
     zajeta += 1.0;
     euro -= 1;
   } else if (nieparzysta) {
-    rzedy.push({ typ: "W", dl: 1.0, opis: "niepełny rząd wybitych", szer: "pełna" });
+    rzedy.push("W");
     zajeta += 1.0;
   }
 
-  // --- Dwójki euro (jeśli nie tworzą się pełne trójki) ---
+  // --- Dwójki euro (zawsze przed trójkami) ---
   while (euro % 3 === 2 || euro === 2) {
-    rzedy.push({ typ: "E2", dl: 0.8, opis: "rząd 2 euro", szer: "pełna" });
+    rzedy.push("E2");
     zajeta += 0.8;
     euro -= 2;
   }
 
   // --- Trójki euro ---
   while (euro >= 3) {
-    rzedy.push({ typ: "E3", dl: 1.2, opis: "rząd 3 euro", szer: "pełna" });
+    rzedy.push("E3");
     zajeta += 1.2;
     euro -= 3;
   }
 
-  // --- Generowanie grafiki ---
-  rzedy.forEach(rz => {
+  // --- Grafika ---
+  rzedy.forEach(typ => {
     const row = document.createElement("div");
     row.className = "row";
-    if (rz.typ === "W") {
-      row.innerHTML = `<div class="W"></div><div class="W"></div>`;
-    } else if (rz.typ === "M") {
-      row.innerHTML = `<div class="W"></div><div class="M"></div>`;
-    } else if (rz.typ === "E2") {
-      row.innerHTML = `<div class="E short"></div><div class="E short"></div>`;
-    } else if (rz.typ === "E3") {
-      row.innerHTML = `<div class="E long"></div><div class="E long"></div><div class="E long"></div>`;
-    }
+    if (typ === "W") row.innerHTML = `<div class="W"></div><div class="W"></div>`;
+    else if (typ === "M") row.innerHTML = `<div class="W"></div><div class="M"></div>`;
+    else if (typ === "E2") row.innerHTML = `<div class="E short"></div><div class="E short"></div>`;
+    else if (typ === "E3") row.innerHTML = `<div class="E long"></div><div class="E long"></div><div class="E long"></div>`;
     trailer.appendChild(row);
   });
 
-  // --- Obliczenia ---
+  // --- Grupowanie dla uproszczonej instrukcji ---
+  const grupy = {};
+  rzedy.forEach(r => { grupy[r] = (grupy[r] || 0) + 1; });
+
+  let tekst = `<b>🪵 Instrukcja ładowania:</b><br>`;
+  if (grupy.W) tekst += `${grupy.W} rzędy wybite – ${(grupy.W * 1.0).toFixed(1)} m<br>`;
+  if (grupy.M) tekst += `${grupy.M} rząd mieszany – ${(grupy.M * 1.0).toFixed(1)} m<br>`;
+  if (grupy.E2) tekst += `${grupy.E2} rząd dwójek – ${(grupy.E2 * 0.8).toFixed(1)} m<br>`;
+  if (grupy.E3) tekst += `${grupy.E3} rzędów trójek – ${(grupy.E3 * 1.2).toFixed(1)} m<br>`;
+
   const wolna = 13.6 - zajeta;
   const procent = Math.round((zajeta / 13.6) * 100);
 
-  // --- Instrukcja ---
-  let tekst = `<b>🪵 Instrukcja ładowania:</b><br>`;
-  rzedy.forEach((r, i) => {
-    tekst += `${i + 1}. ${r.opis} → ${r.dl.toFixed(1)} m<br>`;
-  });
   tekst += `<hr>🔹 Łączna długość: ${zajeta.toFixed(1)} m / 13.6 m<br>`;
   tekst += `🔹 Wolne: ${wolna.toFixed(1)} m<br>`;
   tekst += `🔹 Załadunek: ${procent}%`;
